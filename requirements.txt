@@ -1,0 +1,2 @@
+frida==16.*
+watchdog==5.0.2
