@@ -16,11 +16,12 @@ In this repo there is included a demo RN application, with its source code, too.
 
 ## Demo
 
+https://github.com/user-attachments/assets/ddcb1961-f7ff-4fe9-bc28-eda6e24844cb
+
 ## Installation
 
 It is recommended to install React Native Inject through `pipx`, which will take care of creating the virtual
-environment while
-making the tool globally available to you.
+environment while making the tool globally available to you.
 
 ```bash
 pipx install git+https://github.com/BeDefended/react-native-inject
