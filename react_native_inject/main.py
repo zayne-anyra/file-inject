@@ -127,8 +127,11 @@ class FileChangeHandler(FileSystemEventHandler):
             print(f"Error occurred while pushing the file: {str(e)}")
 
 
-def monitor_file(file_path: str, target_app: str):
+def monitor_file(file_path: str, target_app: str, noreload: bool):
     event_handler = FileChangeHandler(file_path, target_app)
+    if noreload:
+        event_handler.push_file_to_device()
+        return
     observer = Observer()
     observer.schedule(event_handler, path=os.path.dirname(file_path), recursive=False)
     observer.start()
@@ -146,15 +149,33 @@ def spawn_app(package: str):
     frida.get_usb_device().resume(pid)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("package", help="Package name of the application")
-    parser.add_argument("bundle", help="Path to the index.android.bundle")
+    parser.add_argument("package", type=str, help="Package name of the application")
+    parser.add_argument("bundle", type=str, help="Path to the index.android.bundle")
+    parser.add_argument(
+        "--script",
+        type=str,
+        help="Path to the custom Frida script, if required.",
+    )
+    parser.add_argument(
+        "--no-reload",
+        action="store_true",
+        help="Disables reloading, if unwanted or if it causes issues.",
+    )
     args = parser.parse_args()
 
     if not os.path.isfile(args.bundle):
         print(f"'{args.bundle}' file doesn't exist!")
         exit(1)
+
+    if args.script and not os.path.isfile(args.script):
+        print(f"'{args.script}' file doesn't exist!")
+        exit(1)
+    elif args.script:
+        global frida_script
+        with open(args.script, "r") as file:
+            frida_script = file.read()
 
     try:
         frida.get_usb_device()
@@ -181,10 +202,7 @@ if __name__ == "__main__":
 
     x = threading.Thread(
         target=monitor_file,
-        args=(
-            os.path.abspath(args.bundle),
-            args.package,
-        ),
+        args=(os.path.abspath(args.bundle), args.package, args.no_reload),
         daemon=True,
     )
     x.start()
@@ -221,3 +239,7 @@ if __name__ == "__main__":
             ],
             check=True,
         )
+
+
+if __name__ == "__main__":
+    main()

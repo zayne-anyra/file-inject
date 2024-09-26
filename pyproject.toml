@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "react-native-inject"
+version = "0.1.0"
+
+dependencies = [
+    "frida==16.*",
+    "watchdog==5.0.2",
+]
+
+description = "A simple script that prints Hello, World!"
+authors = [
+    { name = "Cezar Lungu" },
+    { name = "BeDefended S.r.l." }
+]
+license = { file = "LICENSE.txt" }
+readme = "README.md"
+keywords = ["Frida", "React Native", "index.android.bundle"]
+
+[project.urls]
+Repository = "https://github.com/BeDefended/react-native-inject"
+"Blog Post" = "https://newsroom.bedefended.com/hooking-react-native-applications-with-frida/"
+
+[project.scripts]
+react-native-inject = "react_native_inject.main:main"
+
+[tool.setuptools]
+packages = ["react_native_inject"]
