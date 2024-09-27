@@ -120,7 +120,7 @@ class FileChangeHandler(FileSystemEventHandler):
             self.last_uploaded = datetime.now()
 
             global session
-            if session != None:
+            if session is not None:
                 session.detach()
                 spawn_app(self.target_app)
         except subprocess.CalledProcessError as e:
@@ -193,11 +193,14 @@ def main():
             stdout=subprocess.PIPE,
             check=True,
         )
-    except frida.InvalidArgumentError as e:
+    except frida.InvalidArgumentError:
         print(f"No Frida USB devices found!")
         exit(1)
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         print(f"'{args.package}' package name not found!")
+        exit(1)
+    except Exception as e:
+        print(f"Error! {e}")
         exit(1)
 
     x = threading.Thread(
