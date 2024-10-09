@@ -96,7 +96,7 @@ class FileChangeHandler(FileSystemEventHandler):
                     "adb",
                     "push",
                     self.file_path,
-                    "/data/local/tmp/BridgeReactNativeDevBundle.js",
+                    f"/data/local/tmp/{os.path.basename(self.file_path)}",
                 ],
                 check=True,
                 stdout=subprocess.DEVNULL,
@@ -108,15 +108,13 @@ class FileChangeHandler(FileSystemEventHandler):
                     "su",
                     "-c",
                     "cp",
-                    "/data/local/tmp/BridgeReactNativeDevBundle.js",
-                    "/data/user/0/{0}/files/BridgeReactNativeDevBundle.js".format(
-                        self.target_app
-                    ),
+                    f"/data/local/tmp/{os.path.basename(self.file_path)}",
+                    f"/data/user/0/{self.target_app}/files/{os.path.basename(self.file_path)}",
                 ],
                 check=True,
                 stdout=subprocess.DEVNULL,
             )
-            print(f"[i] index.android.bundle uploaded successfully.")
+            print(f"[i] {os.path.basename(self.file_path)} uploaded successfully.")
             self.last_uploaded = datetime.now()
 
             global session
@@ -140,10 +138,9 @@ def monitor_file(file_path: str, target_app: str, noreload: bool):
 def spawn_app(package: str):
     global session
     global frida_script
-    print("\n[i] Spawning " + package)
+    print(f"\n[i] Spawning {package}.")
     pid = frida.get_usb_device().spawn(package)
     session = frida.get_usb_device().attach(pid)
-    frida_script = frida_script.replace("com.myproject", package)
     script = session.create_script(frida_script)
     script.load()
     frida.get_usb_device().resume(pid)
@@ -188,7 +185,7 @@ def main():
                 "packages",
                 "|",
                 "grep",
-                "^package:{}$".format(args.package),
+                f"^package:{args.package}$",
             ],
             stdout=subprocess.PIPE,
             check=True,
@@ -202,6 +199,9 @@ def main():
     except Exception as e:
         print(f"Error! {e}")
         exit(1)
+
+    frida_script = frida_script.replace("com.myproject", args.package)
+    frida_script = frida_script.replace("BridgeReactNativeDevBundle.js", args.bundle)
 
     x = threading.Thread(
         target=monitor_file,
@@ -224,22 +224,13 @@ def main():
                 "su",
                 "-c",
                 "rm",
-                "/data/user/0/{0}/files/BridgeReactNativeDevBundle.js".format(
-                    args.package
-                ),
+                f"/data/user/0/{args.package}/files/{args.bundle}",
             ],
             check=True,
         )
 
         subprocess.run(
-            [
-                "adb",
-                "shell",
-                "su",
-                "-c",
-                "rm",
-                "/data/local/tmp/BridgeReactNativeDevBundle.js",
-            ],
+            ["adb", "shell", "su", "-c", "rm", f"/data/local/tmp/{args.bundle}"],
             check=True,
         )
 
