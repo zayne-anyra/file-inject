@@ -68,6 +68,18 @@ Java.perform(function () {
     console.log("[!] Error trying react.ReactNativeHost method." );
   }
 });
+
+Java.perform(function () {
+  try {
+    let FlutterJNI = Java.use("io.flutter.embedding.engine.FlutterJNI");
+    FlutterJNI["loadLibrary"].implementation = function () {
+        console.log(`[i] Injected successfully using FlutterJNI.loadLibrary!`);
+        Java.use('java.lang.System')["load"]("/data/user/0/com.myproject/files/BridgeReactNativeDevBundle.js");
+    };
+  } catch (error) {
+    console.log("[!] Error trying FlutterJNI.loadLibrary method." );
+  }
+});
     """
 
 session = None
@@ -149,7 +161,9 @@ def spawn_app(package: str):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("package", type=str, help="Package name of the application")
-    parser.add_argument("bundle", type=str, help="Path to the index.android.bundle")
+    parser.add_argument(
+        "bundle", type=str, help="Path to the index.android.bundle / libflutter.so"
+    )
     parser.add_argument(
         "--script",
         type=str,

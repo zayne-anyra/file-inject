@@ -3,29 +3,32 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "react-native-inject"
-version = "0.1.0"
+name = "file-inject"
+version = "0.2.0"
 
 dependencies = [
     "frida==16.*",
     "watchdog==5.0.2",
 ]
 
-description = "A simple script that prints Hello, World!"
+description = """A simple script that pushes a file to the Android device and hooks the relevant functions with Frida to
+override the application's behaviour at runtime. Designed with React Native and Flutter frameworks in mind, while trying
+to be as universal as possible.
+    """
 authors = [
     { name = "Cezar Lungu" },
     { name = "BeDefended S.r.l." }
 ]
 license = { file = "LICENSE.txt" }
 readme = "README.md"
-keywords = ["Frida", "React Native", "index.android.bundle"]
+keywords = ["Frida", "React Native", "index.android.bundle", "Flutter", "libflutter.so"]
 
 [project.urls]
-Repository = "https://github.com/BeDefended/react-native-inject"
+Repository = "https://github.com/BeDefended/file-inject"
 "Blog Post" = "https://newsroom.bedefended.com/hooking-react-native-applications-with-frida/"
 
 [project.scripts]
-react-native-inject = "react_native_inject.main:main"
+file-inject = "file_inject.main:main"
 
 [tool.setuptools]
-packages = ["react_native_inject"]
+packages = ["file_inject"]
