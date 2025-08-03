@@ -151,11 +151,37 @@ def spawn_app(package: str):
     global session
     global frida_script
     print(f"\n[i] Spawning {package}.")
-    pid = frida.get_usb_device().spawn(package)
-    session = frida.get_usb_device().attach(pid)
-    script = session.create_script(frida_script)
-    script.load()
-    frida.get_usb_device().resume(pid)
+    
+    try:
+        # Kill the app first if it's running
+        device = frida.get_usb_device()
+        try:
+            existing_pid = device.get_process(package).pid
+            device.kill(existing_pid)
+            print(f"[i] Killed existing process {existing_pid}")
+            time.sleep(1)  # Wait a moment
+        except frida.ProcessNotFoundError:
+            pass  # App wasn't running
+        
+        # Spawn with timeout options
+        pid = device.spawn(package, timeout=30)  # 30 second timeout
+        session = device.attach(pid)
+        script = session.create_script(frida_script)
+        script.load()
+        device.resume(pid)
+        
+    except frida.TimedOutError:
+        print(f"[!] Timeout spawning {package}. Try starting the app manually and use attach mode.")
+        # Alternative: try to attach to running process instead
+        try:
+            session = device.attach(package)
+            script = session.create_script(frida_script)
+            script.load()
+            print(f"[i] Attached to running {package} instead.")
+        except:
+            print(f"[!] Failed to attach to {package}. Make sure it's running.")
+    except Exception as e:
+        print(f"[!] Error spawning app: {e}")
 
 
 def main():
